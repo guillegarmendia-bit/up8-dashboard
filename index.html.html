@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>UP8 · Modulo A · Auditoria 16/03/2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{
+  --bg0:#000;--bg1:#0D0D0D;--bg2:#1A1A1A;--bg3:#242424;--bg4:#303030;
+  --line:#1E1E1E;--line2:#333;
+  --txt0:#FFF;--txt1:#E0E0E0;--txt2:#A0A0A0;--txt3:#666;
+  --green:#4EE8A0;--red:#F06070;--amber:#F0C060;--blue:#80C8E8;
+  --ocre:#B38A00;--ocre-dim:#6B4F00;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{font-size:16px}
+body{background:var(--bg0);color:var(--txt1);font-family:'Courier New',Courier,monospace;
+     font-size:14px;line-height:1.5;overflow-x:hidden}
+
+/* HEADER */
+.hdr{background:var(--bg1);border-bottom:2px solid var(--ocre-dim);
+     padding:14px 16px;position:sticky;top:0;z-index:100}
+.hdr-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px}
+.hdr h1{font-size:13px;font-weight:700;color:var(--txt0);letter-spacing:.08em;
+        text-transform:uppercase;line-height:1.3}
+.hdr-badges{display:flex;gap:6px;flex-wrap:wrap}
+.badge{font-size:10px;padding:3px 8px;border-radius:3px;font-weight:700;
+       background:var(--bg3);color:var(--txt2);border:1px solid var(--line2);
+       letter-spacing:.04em;white-space:nowrap}
+.badge-r{background:rgba(240,96,112,.08);border-color:rgba(240,96,112,.3);color:var(--red)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--red);
+     animation:pulse 1.8s ease-in-out infinite;flex-shrink:0;margin-top:2px}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(240,96,112,.4)}
+                 50%{box-shadow:0 0 0 6px rgba(240,96,112,0)}}
+.hdr-sub{font-size:10px;color:var(--txt3);letter-spacing:.04em;line-height:1.6}
+
+/* LAYOUT */
+.wrap{padding:12px 14px;max-width:700px;margin:0 auto}
+.sec-title{font-size:10px;font-weight:700;color:var(--txt3);text-transform:uppercase;
+           letter-spacing:.12em;margin-bottom:10px;padding-left:8px;
+           border-left:2px solid var(--ocre-dim);display:flex;align-items:center;gap:8px}
+.mb{margin-bottom:14px}
+
+/* TIMELINE */
+.tline{background:var(--bg2);border:1px solid var(--line);border-radius:8px;
+       padding:14px 16px;margin-bottom:14px}
+.tline-top{margin-bottom:10px}
+.tline-title{font-size:11px;font-weight:700;color:var(--txt1);letter-spacing:.05em;
+             text-transform:uppercase;margin-bottom:4px}
+.tline-info{font-size:11px;color:var(--txt3);line-height:1.6}
+.tline-bg{background:var(--bg4);border-radius:3px;height:8px;overflow:visible;
+          margin:10px 0 6px;position:relative}
+.tline-fill{height:8px;border-radius:3px;background:var(--txt3);position:absolute}
+.tline-marker{position:absolute;top:-6px;height:20px;width:2px;background:var(--ocre);border-radius:2px}
+.tline-marker::after{content:"HOY";position:absolute;top:-14px;left:-10px;
+                      font-size:8px;color:var(--ocre);font-weight:700;white-space:nowrap}
+.months{display:grid;grid-template-columns:repeat(19,1fr);gap:2px;margin-top:6px}
+.mo{height:18px;border-radius:2px;display:flex;align-items:center;justify-content:center;
+    font-size:6px;font-weight:700}
+.mo.d{background:var(--bg4);color:var(--txt3)}
+.mo.c{background:var(--ocre-dim);color:var(--ocre)}
+.mo.p{background:var(--bg3);color:var(--txt3)}
+.mo.x{background:rgba(240,96,112,.12);color:var(--red)}
+
+/* KPIs — 3 columnas en mobile */
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.kpi{background:var(--bg2);border-radius:8px;padding:12px 10px;border:1px solid var(--line);
+     text-align:center;position:relative;overflow:hidden}
+.kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+            background:var(--ac,var(--line2))}
+.kl{font-size:8px;font-weight:700;color:var(--txt3);text-transform:uppercase;
+    letter-spacing:.07em;margin-bottom:6px;line-height:1.3}
+.kv{font-size:20px;font-weight:700;color:var(--txt0);line-height:1;margin-bottom:3px}
+.ks{font-size:9px;color:var(--txt3);line-height:1.4}
+.r{color:var(--red)}.a{color:var(--amber)}.b{color:var(--blue)}.g{color:var(--green)}.oc{color:var(--ocre)}
+
+/* CONCLUSION */
+.concl{background:rgba(240,96,112,.04);border:1px solid rgba(240,96,112,.25);
+       border-radius:8px;padding:14px 16px;margin-bottom:14px}
+.concl-t{font-size:10px;font-weight:700;color:var(--red);letter-spacing:.1em;
+         text-transform:uppercase;margin-bottom:8px}
+.concl-b{font-size:12px;color:var(--txt2);line-height:1.8}
+.concl-b strong{color:var(--txt0)}
+
+/* CHARTS — 1 columna en mobile */
+.card{background:var(--bg2);border-radius:8px;padding:14px 14px;
+      border:1px solid var(--line);margin-bottom:10px}
+.ct{font-size:10px;font-weight:700;color:var(--txt2);margin-bottom:10px;
+    padding-left:7px;border-left:2px solid var(--ocre-dim);
+    letter-spacing:.07em;text-transform:uppercase}
+.note{font-size:9px;color:var(--txt3);font-style:italic;margin-top:8px;
+      line-height:1.5;padding:6px 10px;background:var(--bg3);border-radius:4px}
+
+/* PERSONAL STATS */
+.pers-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px}
+.ps{text-align:center;background:var(--bg3);border-radius:6px;padding:8px 4px}
+.ps-v{font-size:18px;font-weight:700;color:var(--txt0);line-height:1}
+.ps-l{font-size:8px;color:var(--txt3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+
+/* TABLA RUBROS — scroll horizontal en mobile */
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:6px}
+.tbl{width:100%;border-collapse:collapse;font-size:11px;min-width:500px}
+.tbl th{text-align:left;font-size:9px;color:var(--txt3);padding:8px 10px;
+        border-bottom:1px solid var(--line);font-weight:400;
+        text-transform:uppercase;letter-spacing:.07em;white-space:nowrap}
+.tbl td{padding:8px 10px;border-bottom:1px solid var(--line);
+        color:var(--txt1);vertical-align:middle;white-space:nowrap}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:rgba(255,255,255,.02)}
+.tag{display:inline-block;font-size:9px;padding:3px 7px;border-radius:3px;
+     font-weight:700;letter-spacing:.04em}
+.tok{background:rgba(78,232,160,.1);color:var(--green)}
+.twarn{background:rgba(240,192,96,.1);color:var(--amber)}
+.tbad{background:rgba(240,96,112,.1);color:var(--red)}
+
+/* EMPRESA TABLE */
+.emp-tbl{width:100%;border-collapse:collapse;font-size:11px}
+.emp-tbl th{font-size:9px;color:var(--txt3);padding:5px 8px;border-bottom:1px solid var(--line);
+            font-weight:400;text-transform:uppercase;letter-spacing:.06em}
+.emp-tbl td{padding:5px 8px;border-bottom:1px solid var(--line);color:var(--txt1)}
+.emp-tbl tr:last-child td{border-bottom:none}
+
+/* SWIPE hint */
+.hint{font-size:9px;color:var(--txt3);text-align:right;margin-bottom:4px;
+      letter-spacing:.04em}
+
+@media(max-width:400px){
+  .kv{font-size:17px}
+  .kpis{gap:6px}
+  .kpi{padding:10px 8px}
+}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-top">
+    <div style="flex:1">
+      <h1>UP8 · Modulo A · Auditoria</h1>
+    </div>
+    <div class="dot"></div>
+  </div>
+  <div class="hdr-badges" style="margin-bottom:6px">
+    <div class="badge badge-r">Reunion 16/03/2026</div>
+    <div class="badge">Cert. N 11 · Feb-2026</div>
+  </div>
+  <div class="hdr-sub">
+    Unidad Ejecutora Infraestructura · Prov. Santa Fe<br>
+    ING. Pedro Minervino SA · Licit. Publica 04/2024
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- 1. TIMELINE -->
+<div class="tline mb">
+  <div class="tline-top">
+    <div class="tline-title">Plazo contractual — 548 dias</div>
+    <div class="tline-info">
+      07/04/2025 &rarr; 07/10/2026<br>
+      <span style="color:var(--txt2)">343 dias transcurridos &nbsp;·&nbsp; 205 restantes</span><br>
+      Fin proyectado: <strong style="color:var(--red)">21/10/2026 (+14 dias mora)</strong>
+    </div>
+  </div>
+  <div class="tline-bg">
+    <div class="tline-fill" style="width:62.6%"></div>
+    <div class="tline-marker" style="left:62.6%"></div>
+  </div>
+  <div class="months">
+    <div class="mo d">A</div><div class="mo d">M</div><div class="mo d">J</div>
+    <div class="mo d">J</div><div class="mo d">A</div><div class="mo d">S</div>
+    <div class="mo d">O</div><div class="mo d">N</div><div class="mo d">D</div>
+    <div class="mo d">E</div><div class="mo c">F</div><div class="mo p">M</div>
+    <div class="mo x">A</div><div class="mo x">M</div><div class="mo x">J</div>
+    <div class="mo x">J</div><div class="mo x">A</div><div class="mo x">S</div>
+    <div class="mo x">O</div>
+  </div>
+</div>
+
+<!-- 2. KPIs -->
+<div class="sec-title mb">Indicadores Clave · Cert. N 11 / Feb 2026</div>
+<div class="kpis mb">
+  <div class="kpi" style="--ac:var(--txt3)">
+    <div class="kl">Plazo consumido</div>
+    <div class="kv r">62.6%</div>
+    <div class="ks">343/548 dias</div>
+  </div>
+  <div class="kpi" style="--ac:var(--blue)">
+    <div class="kl">Avance real</div>
+    <div class="kv b">56.1%</div>
+    <div class="ks">Al Cert. 11</div>
+  </div>
+  <div class="kpi" style="--ac:var(--red)">
+    <div class="kl">Deficit</div>
+    <div class="kv r">-6.5pp</div>
+    <div class="ks">Plan vs real</div>
+  </div>
+  <div class="kpi" style="--ac:var(--amber)">
+    <div class="kl">Dias restantes</div>
+    <div class="kv a">205</div>
+    <div class="ks">Vence 07/10</div>
+  </div>
+  <div class="kpi" style="--ac:var(--red)">
+    <div class="kl">Fin proy.</div>
+    <div class="kv r">+14d</div>
+    <div class="ks">21/10/2026</div>
+  </div>
+  <div class="kpi" style="--ac:var(--amber)">
+    <div class="kl">Ritmo actual</div>
+    <div class="kv a">5.1%</div>
+    <div class="ks">por mes</div>
+  </div>
+  <div class="kpi" style="--ac:var(--red)">
+    <div class="kl">Ritmo req.</div>
+    <div class="kv r">6.6%</div>
+    <div class="ks">por mes</div>
+  </div>
+  <div class="kpi" style="--ac:var(--red)">
+    <div class="kl">Rubros criticos</div>
+    <div class="kv r">8</div>
+    <div class="ks">Retraso >20pp</div>
+  </div>
+  <div class="kpi" style="--ac:var(--amber)">
+    <div class="kl">Hitos en riesgo</div>
+    <div class="kv a">M12-14</div>
+    <div class="ks">Incompatibles</div>
+  </div>
+</div>
+
+<!-- 3. CONCLUSION -->
+<div class="concl mb">
+  <div class="concl-t">Conclusion de Auditoria — 16/03/2026</div>
+  <div class="concl-b">
+    La obra consumio el <strong>62.6%</strong> del plazo con solo el <strong>56.13%</strong> de avance fisico,
+    acumulando un deficit de <strong>6.5pp</strong>. Los hitos <strong>M12</strong>, <strong>M13</strong>
+    y <strong>M14</strong> son incompatibles con el ritmo actual.
+    Se constata la necesidad de un <strong>Plan de Recupero formal</strong> por parte de la contratista.
+  </div>
+</div>
+
+<!-- 4. CURVA -->
+<div class="sec-title mb">Curva de Avance — M11 a M19</div>
+<div class="card mb">
+  <div class="ct">Estado actual y proyeccion al ritmo actual</div>
+  <div style="position:relative;height:220px">
+    <canvas id="c-curva"></canvas>
+  </div>
+  <div class="note">Proyeccion lineal al ritmo actual (5.1%/mes): finalizacion 21/10/2026, con 14 dias de mora.</div>
+</div>
+
+<!-- 5. RITMO -->
+<div class="sec-title mb">Ritmo mensual C1-C11</div>
+<div class="card mb">
+  <div class="ct">Avance mensual por certificado</div>
+  <div style="position:relative;height:200px">
+    <canvas id="c-ritmo"></canvas>
+  </div>
+  <div class="note">Linea punteada = ritmo requerido (6.6%/mes). Solo C6, C7, C8 y C10 superaron el minimo necesario.</div>
+</div>
+
+<!-- PERSONAL -->
+<div class="sec-title mb">Personal en obra — evolucion diaria</div>
+<div class="card mb">
+  <div class="ct">Enero · Febrero · Marzo 2026</div>
+  <div style="position:relative;height:200px">
+    <canvas id="c-pers"></canvas>
+  </div>
+  <div class="note">Tendencia creciente: ENE prom 98 · FEB prom 115 · MAR prom 119 (al 12/03).</div>
+</div>
+
+<!-- PERSONAL STATS por mes -->
+<div class="sec-title mb">Resumen de personal por mes</div>
+<div class="card" style="margin-bottom:8px">
+  <div class="ct">Enero 2026</div>
+  <div class="pers-stats">
+    <div class="ps"><div class="ps-v oc">98</div><div class="ps-l">Promedio</div></div>
+    <div class="ps"><div class="ps-v">107</div><div class="ps-l">Maximo</div></div>
+    <div class="ps"><div class="ps-v">78</div><div class="ps-l">Minimo</div></div>
+    <div class="ps"><div class="ps-v">16</div><div class="ps-l">Dias</div></div>
+  </div>
+  <table class="emp-tbl">
+    <thead><tr><th>Empresa</th><th>Rubro</th><th>Prom.</th></tr></thead>
+    <tbody>
+      <tr><td>Minervino</td><td>General</td><td>39</td></tr>
+      <tr><td>Bertone</td><td>Premoldeados P.T.</td><td>12</td></tr>
+      <tr><td>Flexio</td><td>Cubierta Metalica</td><td>8</td></tr>
+      <tr><td>Romano</td><td>Instalaciones</td><td>7</td></tr>
+      <tr><td>Tissera</td><td>Electrica/Debiles</td><td>5</td></tr>
+      <tr><td>Otros</td><td>Herr./Alban./Fund.</td><td>27</td></tr>
+    </tbody>
+  </table>
+</div>
+<div class="card" style="margin-bottom:8px">
+  <div class="ct">Febrero 2026</div>
+  <div class="pers-stats">
+    <div class="ps"><div class="ps-v oc">115</div><div class="ps-l">Promedio</div></div>
+    <div class="ps"><div class="ps-v">124</div><div class="ps-l">Maximo</div></div>
+    <div class="ps"><div class="ps-v">102</div><div class="ps-l">Minimo</div></div>
+    <div class="ps"><div class="ps-v">19</div><div class="ps-l">Dias</div></div>
+  </div>
+  <table class="emp-tbl">
+    <thead><tr><th>Empresa</th><th>Rubro</th><th>Prom.</th></tr></thead>
+    <tbody>
+      <tr><td>Minervino</td><td>General</td><td>57</td></tr>
+      <tr><td>Albhor</td><td>Fund./Plateas</td><td>12</td></tr>
+      <tr><td>Flexio</td><td>Cubierta Metalica</td><td>8</td></tr>
+      <tr><td>Romano</td><td>Instalaciones</td><td>7</td></tr>
+      <tr><td>Alonzo</td><td>Albanileria</td><td>8</td></tr>
+      <tr><td>Otros</td><td>Herreria/Elec.</td><td>23</td></tr>
+    </tbody>
+  </table>
+</div>
+<div class="card mb">
+  <div class="ct">Marzo 2026 (al 12/03)</div>
+  <div class="pers-stats">
+    <div class="ps"><div class="ps-v oc">119</div><div class="ps-l">Promedio</div></div>
+    <div class="ps"><div class="ps-v">127</div><div class="ps-l">Maximo</div></div>
+    <div class="ps"><div class="ps-v">109</div><div class="ps-l">Minimo</div></div>
+    <div class="ps"><div class="ps-v">7</div><div class="ps-l">Dias</div></div>
+  </div>
+  <table class="emp-tbl">
+    <thead><tr><th>Empresa</th><th>Rubro</th><th>Prom.</th></tr></thead>
+    <tbody>
+      <tr><td>Minervino</td><td>General</td><td>29</td></tr>
+      <tr><td style="color:var(--amber)">Nelson</td><td style="color:var(--amber)">Pintura y Juntas</td><td>15</td></tr>
+      <tr><td>Pablo Munoz</td><td>Herreria</td><td>10</td></tr>
+      <tr><td>Bertone</td><td>Premoldeados P.T.</td><td>8</td></tr>
+      <tr><td>Prear</td><td>Prem. C.R./S.B.</td><td>8</td></tr>
+      <tr><td>Otros</td><td>Varios</td><td>49</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- 6. TABLA 29 RUBROS -->
+<div class="sec-title mb">Tabla Completa — 29 Rubros</div>
+<div class="card mb">
+  <div class="ct">Plan Empresa vs Avance Real C11</div>
+  <div class="hint">deslizar &rarr;</div>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th>#</th><th>Rubro</th><th>Incid.%</th>
+          <th>Plan Emp.</th><th>Real C11</th>
+          <th>Desvio</th><th>Estado</th>
+        </tr>
+      </thead>
+      <tbody id="tb"></tbody>
+    </table>
+  </div>
+</div>
+
+<div style="padding:10px 0 20px;text-align:center;font-size:9px;color:var(--txt3)">
+  UP8 · Modulo A · Certificado N 11 · Auditoria 16/03/2026<br>
+  Unidad Ejecutora de Infraestructura — Prov. Santa Fe
+</div>
+
+</div><!-- /wrap -->
+
+<script>
+const C={green:"#4EE8A0",red:"#F06070",amber:"#F0C060",blue:"#80C8E8",
+         ocre:"#B38A00",txt3:"#555",bg3:"#242424",bg4:"#303030",line:"#1E1E1E"};
+Chart.defaults.color=C.txt3;
+Chart.defaults.font.family="'Courier New', monospace";
+
+// CURVA
+new Chart(document.getElementById("c-curva"),{
+  type:"line",
+  data:{
+    labels:['FEB-26', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT-26'],
+    datasets:[
+      {label:"Plan Empresa",data:[51.17, 60.4, 69.18, 77.18, 84.69, 90.66, 95.64, 99.11, 100.0],borderColor:"#555",borderWidth:1.5,
+       borderDash:[4,3],pointRadius:2,tension:0.3,backgroundColor:"transparent"},
+      {label:"Plan Unidad",data:[51.0, 60.4, 69.18, 77.18, 84.69, 90.66, 95.64, 99.11, 100.0],borderColor:"#6B4F00",borderWidth:1.5,
+       borderDash:[2,2],pointRadius:2,tension:0.3,backgroundColor:"transparent"},
+      {label:"Real C11",data:[56.13, None, None, None, None, None, None, None, None],borderColor:C.blue,borderWidth:3,
+       pointRadius:[8,0,0,0,0,0,0,0,0],pointBackgroundColor:C.blue,tension:0.3,
+       backgroundColor:"rgba(128,200,232,.06)",fill:true},
+      {label:"Proyeccion",data:[56.13, 61.23, 66.33, 71.43, 76.53, 81.63, 86.73, 91.83, 96.93],borderColor:C.red,borderWidth:1.5,
+       borderDash:[5,4],pointRadius:2,tension:0.3,backgroundColor:"transparent"}
+    ]
+  },
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{labels:{color:C.txt3,font:{size:9},boxWidth:10,padding:10}}},
+    scales:{
+      x:{ticks:{color:C.txt3,font:{size:9},maxRotation:0},grid:{color:C.line}},
+      y:{ticks:{color:C.txt3,font:{size:9},callback:v=>v+"%"},grid:{color:C.line},min:48,max:102}
+    }
+  }
+});
+
+// RITMO
+const HIST=[0.56, 1.44, 3.38, 4.41, 3.43, 5.4, 7.11, 7.58, 5.86, 8.9, 8.06];
+new Chart(document.getElementById("c-ritmo"),{
+  type:"bar",
+  data:{
+    labels:["C1\nABR-25","C2\nMAY-25","C3\nJUN-25","C4\nJUL-25","C5\nAGO-25",
+            "C6\nSEP-25","C7\nOCT-25","C8\nNOV-25","C9\nDIC-25","C10\nENE-26","C11\nFEB-26"],
+    datasets:[
+      {label:"% mensual",data:HIST,
+       backgroundColor:HIST.map(v=>v>=6.6?C.green:(v>=4?"#555":C.red)),
+       borderRadius:3,borderSkipped:false},
+      {label:"Req.",data:Array(11).fill(6.6),type:"line",
+       borderColor:C.amber,borderWidth:1.5,borderDash:[4,3],pointRadius:0}
+    ]
+  },
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{
+      x:{ticks:{color:C.txt3,font:{size:8},maxRotation:0},grid:{color:C.line}},
+      y:{ticks:{color:C.txt3,font:{size:9},callback:v=>v+"%"},grid:{color:C.line}}
+    }
+  }
+});
+
+// PERSONAL
+const pFechas=["09/01","12/01","13/01","14/01","15/01","16/01","19/01","20/01",
+               "21/01","22/01","23/01","26/01","27/01","28/01","29/01","30/01",
+               "02/02","03/02","04/02","05/02","06/02","09/02","10/02","11/02",
+               "12/02","13/02","16/02","17/02","18/02","19/02","20/02","24/02",
+               "25/02","26/02","27/02","02/03","04/03","05/03","09/03","10/03","11/03","12/03"];
+const pTot=[81,98,86,78,93,96,102,107,103,102,104,107,104,105,102,100,
+            104,109,105,111,102,118,108,124,113,123,120,119,120,123,122,121,
+            121,120,119,114,118,127,109,118,127,119];
+const pColors=pFechas.map(f=>{
+  if(f.includes("/01"))return"rgba(179,138,0,.5)";
+  if(f.includes("/02"))return"rgba(179,138,0,.75)";
+  return"rgba(179,138,0,1)";
+});
+new Chart(document.getElementById("c-pers"),{
+  type:"line",
+  data:{
+    labels:pFechas,
+    datasets:[{
+      label:"Personal",data:pTot,
+      borderColor:C.ocre,backgroundColor:"rgba(179,138,0,.07)",fill:true,
+      tension:0.3,pointRadius:2.5,pointBackgroundColor:pColors,borderWidth:2
+    }]
+  },
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{
+      x:{ticks:{color:C.txt3,font:{size:7},maxRotation:45,maxTicksLimit:15},grid:{color:C.line}},
+      y:{ticks:{color:C.txt3,font:{size:9}},grid:{color:C.line},min:60,suggestedMax:140}
+    }
+  }
+});
+
+// TABLA
+const RUBROS=[(1, 'TRABAJOS PRELIMINARES', 1.385, 1, 19, 76.1, 78.84), (2, 'DEMOLICION Y RETIROS', 0.006, 1, 2, 100.0, 80.0), (3, 'MOVIMIENTO DE SUELOS', 0.58, 1, 19, 96.6, 99.03), (4, 'FUNDACIONES', 9.89, 2, 14, 99.7, 98.8), (5, 'ESTRUCTURA H° ARMADO', 28.691, 4, 15, 68.1, 75.73), (6, 'ESTRUCTURA METALICA', 2.702, 4, 13, 92.7, 90.63), (7, 'AISLACIONES', 2.737, 7, 16, 50.0, 20.7), (8, 'CUBIERTAS PLANAS', 1.338, 9, 16, 50.0, 0.71), (9, 'CUBIERTAS METALICAS', 3.345, 6, 12, 88.1, 42.94), (10, 'MAMPOSTERIAS', 0.47, 7, 16, 50.2, 51.0), (11, 'REVOQUES', 0.096, 13, 16, 0.0, 7.26), (12, 'CONTRAPISOS Y CARPETAS', 0.25, 9, 15, 70.3, 36.95), (13, 'PISOS / ZOC. / REVESTIM.', 3.665, 8, 19, 33.2, 51.26), (14, 'CIELORRASOS', 0.224, 11, 19, 13.0, 0.0), (15, 'INSTALACION DE GAS', 1.573, 13, 19, 0.0, 0.0), (16, 'INSTALACION SANITARIA', 8.607, 3, 19, 28.9, 57.23), (17, 'INSTALACION ELECTRICA', 9.129, 6, 19, 24.7, 12.48), (18, 'CORRIENTES DEBILES', 3.009, 9, 19, 2.1, 17.52), (19, 'INST. TERMOMECANICA', 1.343, 10, 19, 7.9, 5.18), (20, 'EXTINCION DE INCENDIO', 0.83, 7, 19, 46.8, 40.66), (21, 'MESADAS Y MOBILIARIOS', 2.729, 8, 19, 17.0, 58.65), (22, 'CARPINTERIAS Y HERRERIAS', 12.312, 3, 19, 39.2, 56.0), (23, 'VIDRIOS', 0.399, 14, 19, 0.0, 0.0), (24, 'PINTURA', 1.646, 12, 19, 0.0, 1.27), (25, 'CERCOS DE SEGURIDAD', 2.071, 10, 19, 7.0, 25.53), (26, 'PARQUIZACION', 0.095, 15, 19, 0.0, 0.0), (27, 'PAVIMENTOS INTRAMUROS', 0.132, 14, 18, 0.0, 0.0), (28, 'EQUIPAMIENTOS', 0.125, 15, 19, 0.0, 0.0), (29, 'LIMPIEZA Y SEGURIDAD', 0.583, 1, 19, 59.7, 53.8)];
+function sem(d,fin){
+  if((fin<=11&&d<-5)||d<-20)return{lbl:"CRITICO",cls:"tbad",col:C.red};
+  if(d<-5)return{lbl:"ATRASADO",cls:"twarn",col:C.amber};
+  return{lbl:"EN PLAZO",cls:"tok",col:C.green};
+}
+const tb=document.getElementById("tb");
+RUBROS.forEach(r=>{
+  const[n,d,inc,ini,fin,emp,real]=r;
+  const dev=real-emp; const s=sem(dev,fin);
+  tb.innerHTML+=`<tr>
+    <td style="color:var(--txt3)">${n}</td>
+    <td style="font-weight:600">${d}</td>
+    <td>${inc.toFixed(2)}%</td>
+    <td>${emp.toFixed(1)}%</td>
+    <td style="color:${s.col};font-weight:700">${real.toFixed(1)}%</td>
+    <td style="color:${s.col};font-weight:700">${dev>=0?"+":""}${dev.toFixed(1)}pp</td>
+    <td><span class="tag ${s.cls}">${s.lbl}</span></td>
+  </tr>`;
+});
+</script>
+</body>
+</html>
